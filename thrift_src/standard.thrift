@@ -296,7 +296,7 @@ exception InvalidIdLookup {
 }
 
 service Standard {
-	
+
   // table operations
 
   // works for direct and indirect tables
@@ -599,7 +599,7 @@ service Standard {
   ) throws (1:InvalidSwapOperation ouch),
 
   void bm_swap_configs() throws (1:InvalidSwapOperation ouch),
-  
+
   // meters
 
   void bm_meter_array_set_rates(
@@ -648,6 +648,13 @@ service Standard {
     3:i32 start_index,
     4:i32 end_index,
     5:BmRegisterValue value
+  ) throws (1:InvalidRegisterOperation ouch)
+
+  void bm_register_write_full(
+    1:i32 cxt_id,
+    2:string register_array_name,
+    3:i32 array_length,
+    4:list<BmRegisterValue> values
   ) throws (1:InvalidRegisterOperation ouch)
 
   void bm_register_reset(

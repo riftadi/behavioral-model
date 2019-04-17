@@ -358,6 +358,12 @@ class RuntimeInterface {
                        Data value) = 0;
 
   virtual RegisterErrorCode
+  register_write_full(cxt_id_t cxt_id,
+                      const std::string &register_name,
+                      const int32_t array_length,
+                      std::vector<Data> &values) = 0;
+
+  virtual RegisterErrorCode
   register_reset(cxt_id_t cxt_id, const std::string &register_name) = 0;
 
   virtual ParseVSet::ErrorCode

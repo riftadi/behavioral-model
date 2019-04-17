@@ -1025,6 +1025,23 @@ public:
     }
   }
 
+  void bm_register_write_full(const int32_t cxt_id,
+                              const std::string& register_array_name,
+                              const int32_t array_length,
+                              const std::vector<BmRegisterValue>& values) {
+    Logger::get()->trace("bm_register_write_full");
+    std::vector<Data> data_values;
+    for (const BmRegisterValue value : values) data_values.push_back(Data(value));
+    Register::RegisterErrorCode error_code = switch_->register_write_full(
+        cxt_id, register_array_name,
+        static_cast<size_t>(array_length), data_values);
+    if(error_code != Register::RegisterErrorCode::SUCCESS) {
+      InvalidRegisterOperation iro;
+      iro.code = (RegisterOperationErrorCode::type) error_code;
+      throw iro;
+    }
+  }
+
   void bm_register_reset(const int32_t cxt_id, const std::string& register_array_name) {
     Logger::get()->trace("bm_register_reset");
     Register::RegisterErrorCode error_code = switch_->register_reset(

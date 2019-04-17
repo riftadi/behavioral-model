@@ -635,6 +635,20 @@ Context::register_write_range(const std::string &register_name,
 }
 
 Context::RegisterErrorCode
+Context::register_write_full(const std::string &register_name,
+                             const int32_t array_length,
+                             std::vector<Data> &values) {
+  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  RegisterArray *register_array = p4objects_rt->get_register_array_rt(
+      register_name);
+  if (!register_array) return Register::INVALID_REGISTER_NAME;
+  auto register_lock = register_array->unique_lock();
+  for (int32_t idx = 0; idx < array_length; idx++)
+    register_array->at(idx).set(values[idx]);
+  return Register::SUCCESS;
+}
+
+Context::RegisterErrorCode
 Context::register_reset(const std::string &register_name) {
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
   RegisterArray *register_array = p4objects_rt->get_register_array_rt(

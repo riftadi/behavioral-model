@@ -382,6 +382,11 @@ class Context final {
                        const size_t start, const size_t end, Data value);
 
   RegisterErrorCode
+  register_write_full(const std::string &register_name,
+                      const int32_t array_length,
+                      std::vector<Data> &values);
+
+  RegisterErrorCode
   register_reset(const std::string &register_name);
 
   ParseVSet::ErrorCode
