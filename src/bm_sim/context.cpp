@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <unordered_map>
+#include <chrono>
 
 namespace bm {
 
@@ -773,8 +775,65 @@ Context::load_new_config(
   boost::unique_lock<boost::shared_mutex> lock(request_mutex);
   // check that there is no ongoing config swap
   if (p4objects != p4objects_rt) return ErrorCode::ONGOING_SWAP;
+
+  auto start = std::chrono::steady_clock::now();
+
+  std::unordered_map<std::string, std::shared_ptr<RegisterArray>>
+      old_registers_map = p4objects_rt->get_register_arrays();
+  std::unordered_map<std::string, std::vector<Data>> entries_map;
+
+  for (auto& old_register : old_registers_map) {
+    auto register_name = old_register.first;
+    auto register_array = old_register.second;
+
+    std::cout << "Backing up " << register_name << std::endl;
+
+    std::vector<Data> curr_entries;
+    curr_entries.reserve(register_array->size());
+    for (const auto &reg : *register_array) curr_entries.push_back(reg);
+    entries_map.insert({register_name, curr_entries});
+    std::cout << "Done.." << std::endl;
+  }
+
+  auto end = std::chrono::steady_clock::now();
+  auto diff = end - start;
+  std::cout << "Storing time: "
+            << std::chrono::duration<double, std::milli>(diff).count()
+            << " ms" << std::endl;
+
   p4objects_rt = std::make_shared<P4Objects>(std::cout, true);
   init_objects(is, lookup_factory, required_fields, arith_objects);
+
+  start = std::chrono::steady_clock::now();
+  std::unordered_map<std::string, std::shared_ptr<RegisterArray>>
+            new_registers_map = p4objects_rt->get_register_arrays();
+
+  if (entries_map.size() > 0) {
+    for (auto& new_register : new_registers_map) {
+      auto register_name = new_register.first;
+
+      auto search = entries_map.find(register_name);
+      if (search != entries_map.end()) {
+        std::vector<Data> entries = search->second;
+
+        std::cout << "Restoring " << register_name << std::endl;
+        RegisterArray *register_array_new = p4objects_rt->get_register_array_rt(
+            register_name);
+        for (int idx = 0; idx < (int) entries.size(); idx++)
+          register_array_new->at(idx).set(entries[idx]);
+        std::cout << "Done.." << std::endl;
+      } else {
+        std::cout << "Found new register " << register_name  << std::endl;
+      }
+    } // for (new_register : new_registers_map)
+  } // if (entries_map)
+
+  end = std::chrono::steady_clock::now();
+  diff = end - start;
+  std::cout << "Restoring time: "
+            << std::chrono::duration<double, std::milli>(diff).count()
+            << " ms" << std::endl;
+
   return ErrorCode::SUCCESS;
 }
 
