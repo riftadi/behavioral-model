@@ -220,6 +220,11 @@ class P4Objects {
 
   CounterArray *get_counter_array_rt(const std::string &name) const;
 
+  std::unordered_map<std::string, std::shared_ptr<RegisterArray>>
+  get_register_arrays() {
+    return register_arrays;
+  }
+
   RegisterArray *get_register_array(const std::string &name) const {
     return register_arrays.at(name).get();
   }
@@ -346,7 +351,7 @@ class P4Objects {
   CounterArray *get_counter_array_cfg(const std::string &name) const;
 
   void add_register_array(const std::string &name,
-                          std::unique_ptr<RegisterArray> register_array);
+                          std::shared_ptr<RegisterArray> register_array);
 
   RegisterArray *get_register_array_cfg(const std::string &name) const;
 
@@ -487,7 +492,7 @@ class P4Objects {
     counter_arrays{};
 
   // register arrays
-  std::unordered_map<std::string, std::unique_ptr<RegisterArray> >
+  std::unordered_map<std::string, std::shared_ptr<RegisterArray> >
     register_arrays{};
 
   // calculations

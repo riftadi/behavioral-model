@@ -1431,7 +1431,7 @@ P4Objects::init_register_arrays(const Json::Value &cfg_root) {
     const int bitwidth = cfg_register_array["bitwidth"].asInt();
 
     RegisterArray *register_array = new RegisterArray(name, id, size, bitwidth);
-    add_register_array(name, unique_ptr<RegisterArray>(register_array));
+    add_register_array(name, std::shared_ptr<RegisterArray>(register_array));
   }
 }
 
@@ -2799,8 +2799,8 @@ P4Objects::get_counter_array_cfg(const std::string &name) const {
 
 void
 P4Objects::add_register_array(const std::string &name,
-                              std::unique_ptr<RegisterArray> register_array) {
-  add_new_object(&register_arrays, "register", name, std::move(register_array));
+                              std::shared_ptr<RegisterArray> register_array) {
+  add_new_object(&register_arrays, "register", name, register_array);
 }
 
 RegisterArray *
